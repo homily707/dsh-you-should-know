@@ -7,7 +7,7 @@
 [![Checks](https://github.com/lolipop-1x1/dsh-you-should-know/actions/workflows/check.yml/badge.svg)](https://github.com/lolipop-1x1/dsh-you-should-know/actions/workflows/check.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A task reminder plugin for DeepSeek Harness. It observes the existing conversation while a task is running and surfaces important facts, trade-offs, and background knowledge you may have missed.
+An observer plugin for DeepSeek Harness. It routinely watches for drift from user goals, unnecessary scope or repetition, and important facts or trade-offs the person may have missed.
 
 - **Brief notes**: a floating panel above the input that does not push the conversation upward, with a persistent button to toggle it.
 - **On demand**: open the note center any time to check the conversation now or review this session's past notes.
@@ -70,7 +70,7 @@ A persistent button at the input's top-left corner opens the note center and clo
 | Check now | Start an observation on demand; same judgment bar as automatic checks, with an explicit panel receipt |
 | Session notes | Review this session's past notes and explanations; bring one back to the main session |
 
-Notes help you understand a task. They are not fact checks or execution reviews: they may miss important details or be inaccurate. Bring a note into the main session when you want to discuss it further.
+Notes assess alignment and execution decisions using available conversation evidence; they are not independent code audits or fact checks and can miss or misjudge issues. Bring a note into the main session for further discussion.
 
 ## Settings
 

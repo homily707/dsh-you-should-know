@@ -7,7 +7,7 @@
 [![检查](https://github.com/lolipop-1x1/dsh-you-should-know/actions/workflows/check.yml/badge.svg)](https://github.com/lolipop-1x1/dsh-you-should-know/actions/workflows/check.yml)
 [![许可证：MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-DeepSeek Harness 的任务提醒插件。在任务进行时，观察已有会话中的重要事实、方案取舍和必要知识，帮助你理解可能遗漏的事项。
+DeepSeek Harness 的任务观察插件。默认关注实现与用户目标是否一致、是否超出范围或陷入无效重复，以及用户可能遗漏的重要知识与取舍。
 
 - **简短提醒**：在输入框上方悬浮展示，不挤占聊天内容；常驻按钮可随时展开或收起。
 - **按需查看**：随时打开提醒中心，立即观察当前对话，或回看本会话的提醒历史。
@@ -70,7 +70,7 @@ dsh plugin --profile web add -w /absolute/path/dsh-you-should-know-0.1.0.tgz
 | 立即观察 | 主动发起一次观察；判断标准与自动一致，结果在面板回执 |
 | 本会话提醒 | 回看本会话出现过的提醒及解释，可带回主会话 |
 
-提醒用于帮助理解任务，并非事实核验或执行审查。它可能遗漏重要事项，也可能判断不准确；需要时可带回主会话进一步讨论。
+提醒基于会话证据观察目标一致性、执行合理性和重要取舍，不等于独立代码审计或事实核验。它可能遗漏或误判；需要时可带回主会话讨论。
 
 ## 设置
 

@@ -31,6 +31,12 @@ describe('语言设置与旁路协议', () => {
     expect(prompt).toContain('["seen topic"]')
     expect(prompt).toContain('["known topic"]')
     expect(prompt).toContain(language === 'zh-CN' ? '不要复述密钥' : 'Do not repeat secrets')
+    // 默认观察同时关注目标、执行、停止时机和认知盲区。
+    for (const topic of language === 'zh-CN'
+      ? ['用户目标', '实现一致性', '执行质量与收敛', '重要认知', '必要验证']
+      : ['User goals', 'Implementation alignment', 'Execution quality and stopping', 'Critical understanding', 'essential validation']) {
+      expect(prompt).toContain(topic)
+    }
     expect(explanationPrompt('A selected note.', language)).toContain(language === 'zh-CN' ? '使用简体中文' : 'Write in English')
   })
 })
