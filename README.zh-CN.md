@@ -46,7 +46,7 @@ npm pack
 将生成的安装包添加到你的 Harness profile：
 
 ```sh
-dsh plugin --profile web add -w /absolute/path/dsh-you-should-know-0.1.0.tgz
+dsh plugin --profile web add -w /absolute/path/dsh-you-should-know-0.1.1.tgz
 ```
 
 将 `web` 替换为实际 profile 名称，并修改安装包的绝对路径。`-w` 允许 pnpm 在 profile 的 workspace 根安装。桌面端可使用其插件安装入口或随附 CLI。
