@@ -46,7 +46,7 @@ npm pack
 Add the generated package to your Harness profile:
 
 ```sh
-dsh plugin --profile web add -w /absolute/path/dsh-you-should-know-0.1.1.tgz
+dsh plugin --profile web add -w /absolute/path/dsh-you-should-know-0.1.2.tgz
 ```
 
 Replace `web` with your profile name and adjust the absolute package path. The `-w` option allows pnpm to install at the profile's workspace root. Desktop users can use the plugin installation interface or bundled CLI.

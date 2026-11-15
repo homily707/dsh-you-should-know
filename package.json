@@ -1,6 +1,6 @@
 {
   "name": "dsh-you-should-know",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "在 DeepSeek Harness 任务中提醒用户理解重要事实和方案取舍。",
   "type": "module",
   "license": "MIT",
