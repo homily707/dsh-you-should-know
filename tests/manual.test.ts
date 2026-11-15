@@ -5,7 +5,7 @@ import { appendHistory, emptyState, historyExplanation, EXPLANATION_LIMIT, HISTO
 import { Engine } from '../src/host/engine.js'
 
 const snapshot: GenerateOptions = { provider: 'main', model: 'main-model', messages: [{ role: 'user', content: [{ type: 'text', text: '提高性能' }] }] }
-const response = 'learn: The cache can delay updates by five minutes.\ntag: Heads up\nexplain: Cached values remain visible until the next refresh.'
+const response = 'learn: The cache can delay updates by five minutes.\ntag: Unexpected decision\nexplain: Cached values remain visible until the next refresh.'
 const other = 'learn: The migration drops legacy indexes on release.\ntag: You should know\nexplain: Rebuild them after upgrading.'
 const assistant = (text: string): AssistantMessage => ({ id: 'm1', role: 'assistant', source: { provider: 'p', model: 'm' }, content: [{ type: 'text', text }] })
 
@@ -116,7 +116,7 @@ describe('手动触发观察', () => {
   it('解释在途时拒绝手动观察，解释结果仍写入', async () => {
     let resolveExplanation!: (text: string) => void
     const model = vi.fn()
-      .mockResolvedValueOnce('learn: A new constraint.\ntag: Heads up')
+      .mockResolvedValueOnce('learn: A new constraint.\ntag: Requirement drift')
       .mockImplementationOnce(() => new Promise<string>(done => { resolveExplanation = done }))
     const f = await fixture(model)
     const view = await f.offer()
