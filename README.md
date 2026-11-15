@@ -72,6 +72,8 @@ A persistent button at the input's top-left corner opens the note center and clo
 
 Notes assess alignment and execution decisions using available conversation evidence; they are not independent code audits or fact checks and can miss or misjudge issues. Bring a note into the main session for further discussion.
 
+Each new note uses one of five tags: **Requirement drift, Unexpected decision, Execution drift, Wrap up, You should know**. Previously saved generic **Heads up** notes remain readable.
+
 ## Settings
 
 Open **Settings → You Should Know**. Changes save automatically.

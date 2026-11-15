@@ -13,7 +13,7 @@ import type { ClientTransportHooks } from '@deepseek-ai/dsh-client-connection/cl
 import { parseExplanation } from '../core/parser.js'
 import { defaults, languageOf, type Language, type Settings } from '../core/config.js'
 import type { HistoryEntry, TopicList, Topics } from '../core/state.js'
-import { copy, type CopyKey } from './i18n.js'
+import { copy, tagCopyKey, type CopyKey } from './i18n.js'
 import { createApi, createHistoryApi, createTopicsApi, type Fetch, type ResponseState } from './api.js'
 import { styles } from './styles.js'
 
@@ -120,7 +120,7 @@ export function apply(ctx: Context): void {
         if (!alive.current || revision.current !== current || controller.signal.aborted) return
         if (next.accepted !== true) { setState(next); setMessage(t(next.job ? 'busy' : 'stale')); return }
         if (action === 'chat') {
-          const note = `${view.tag} · ${view.line}\n\n${view.explanation ?? ''}`
+          const note = `${t(tagCopyKey(view.tag))} · ${view.line}\n\n${view.explanation ?? ''}`
           const text = `${t('discuss')}\n\n${note.split('\n').map(line => `> ${line}`).join('\n')}\n\n`
           if (!span || !props.inputActions.insertText(text, span)) { setMessage(t('changed')); return }
           next = await api({ sessionId: props.sessionId, viewId: view.id, action: 'chat-confirm' }, controller.signal)
@@ -189,7 +189,7 @@ export function apply(ctx: Context): void {
       if (busy || operations.current.size) return
       if (draft.trim() || hasAttachments || inputPhase !== 'plain') { setMessage(t('draft')); return }
       const span = props.inputActions.captureInsertion()
-      const note = `${entry.tag} · ${entry.line}\n\n${entry.explanation ?? ''}`
+      const note = `${t(tagCopyKey(entry.tag))} · ${entry.line}\n\n${entry.explanation ?? ''}`
       const text = `${t('discuss')}\n\n${note.split('\n').map(line => `> ${line}`).join('\n')}\n\n`
       if (!span || !props.inputActions.insertText(text, span)) { setMessage(t('changed')); return }
     }
@@ -202,7 +202,7 @@ export function apply(ctx: Context): void {
         ? { ...current, open: false }
         : { open: true, source: 'manual', center: true })
     }
-    const label = view ? t(view.tag === 'Heads up' ? 'heads' : 'know') : t('center')
+    const label = view ? t(tagCopyKey(view.tag)) : t('center')
     const button = (key: CopyKey, action: string, primary = false) => <button className={primary ? 'dshysk-primary' : undefined} type="button"
       disabled={busy || (action === 'expand' && (state?.job !== undefined || state?.checking === true))}
       onClick={() => { void act(action) }}>{t(key)}</button>
@@ -267,7 +267,7 @@ export function apply(ctx: Context): void {
                 <button className="dshysk-history-line" type="button" aria-expanded={historyOpenId === entry.id}
                   onClick={() => setHistoryOpenId(historyOpenId === entry.id ? undefined : entry.id)}>
                   <span className="dshysk-history-meta">{new Date(entry.shownAt).toLocaleTimeString()}</span>
-                  <span className="dshysk-history-tag">{entry.tag === 'Heads up' ? t('heads') : t('know')}</span>
+                  <span className="dshysk-history-tag">{t(tagCopyKey(entry.tag))}</span>
                   <span className="dshysk-history-text">{entry.line}</span>
                 </button>
                 {historyOpenId === entry.id && <div className="dshysk-history-detail">

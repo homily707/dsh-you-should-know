@@ -1,3 +1,5 @@
+import type { StoredTag } from '../core/tags.js'
+
 const zh = {
   learn: '展开解释', knew: '已经知道', dismiss: '关闭', understood: '已了解', chat: '带回主会话',
   helpful: '有帮助', irrelevant: '不相关', unclear: '未理解', waiting: '正在生成解释…',
@@ -8,6 +10,7 @@ const zh = {
   unavailable: '当前连接无法保存此设置。', saved: '设置已保存。', settingsError: '设置未保存，请重试。',
   usage: '自动观察会额外调用模型；即使没有展示提醒，也可能产生用量。默认使用完整会话上下文。',
   catalogError: '部分模型目录未能加载。', refresh: '刷新模型目录', heads: '注意事项', know: '值得了解',
+  requirementDrift: '需求偏差', unexpectedDecision: '意外决策', executionDrift: '执行失焦', wrapUp: '建议收尾',
   discuss: '以下是旁路观察者提出的事项。请结合当前任务讨论其含义与影响。',
   collapse: '收起提醒', open: '展开提醒',
   language: '语言', system: '跟随系统',
@@ -41,6 +44,7 @@ const en: Record<keyof typeof zh, string> = {
   unavailable: 'This connection cannot save this setting.', saved: 'Settings saved.', settingsError: 'Settings were not saved. Please retry.',
   usage: 'Observation makes extra model calls, including when no note is shown. Full conversation context is used by default.',
   catalogError: 'Some model catalogs could not be loaded.', refresh: 'Refresh model catalog', heads: 'Heads up', know: 'You should know',
+  requirementDrift: 'Requirement drift', unexpectedDecision: 'Unexpected decision', executionDrift: 'Execution drift', wrapUp: 'Wrap up',
   discuss: 'Here is a note from a side observer. Please discuss its meaning and impact on the current task.',
   collapse: 'Minimize note', open: 'Open note',
   language: 'Language', system: 'Follow system',
@@ -66,3 +70,13 @@ const en: Record<keyof typeof zh, string> = {
 }
 export type CopyKey = keyof typeof zh
 export const copy = (locale: string, key: CopyKey): string => /^zh(?:-|$)/iu.test(locale) ? zh[key] : en[key]
+
+const tagCopyKeys: Record<StoredTag, CopyKey> = {
+  'Requirement drift': 'requirementDrift',
+  'Unexpected decision': 'unexpectedDecision',
+  'Execution drift': 'executionDrift',
+  'Wrap up': 'wrapUp',
+  'You should know': 'know',
+  'Heads up': 'heads', // 仅用于展示升级前的提醒。
+}
+export const tagCopyKey = (tag: StoredTag): CopyKey => tagCopyKeys[tag]

@@ -1,5 +1,7 @@
+import { OBSERVER_TAGS, type ObserverTag } from './tags.js'
+
 export type Proposal = { kind: 'none' } | { kind: 'invalid' }
-  | { kind: 'line'; line: string; tag: 'You should know' | 'Heads up'; explanation?: string }
+  | { kind: 'line'; line: string; tag: ObserverTag; explanation?: string }
 
 const clean = (text: string) => text
   .replace(/(?:\u001b\]|\u009d)[\s\S]*?(?:\u0007|\u001b\\|\u009c)/gu, '')
@@ -30,19 +32,22 @@ export function parseProposal(text: string): Proposal {
   for (let start = first; start < header.length; start += 1) {
     if (!/^learn\s*:/iu.test(header[start]!)) continue
     let line = header[start]!.replace(/^learn\s*:\s*/iu, '')
-    const inlineTag = /[.\s—–-]*tag\s*:\s*(heads[\s-]*up|you should know)\W*$/iu
+    const inlineTag = /[.\s—–-]*tag\s*:\s*(requirement drift|unexpected decision|execution drift|wrap up|you should know)\W*$/iu
     if (isNone(unquote(unquote(line).replace(inlineTag, '')))) return { kind: 'none' }
     for (const continuation of header.slice(start + 1)) {
       if (!continuation || /^(learn\s*:|tag\s*[:—–-])/iu.test(continuation) || /\?["'”’`]?$/u.test(line)) break
       line += ` ${continuation}`
     }
     const tagMatch = inlineTag.exec(unquote(line))
+    if (/tag\s*:/iu.test(line) && !tagMatch) continue // 显式但未知的分类不得默认为知识提醒。
     line = unquote(line)
     if (tagMatch) line = unquote(line.slice(0, tagMatch.index))
     if (!/[.!?…。！？]["'”’`)\]]*$/u.test(line)) line += '.'
     if (line.length > 240) continue
-    const tagValue = tagLine?.replace(/^tag\s*[:—–-]\s*/iu, '') ?? tagMatch?.[1] ?? ''
-    const tag = /^\W*heads[\s-]*up\W*$/iu.test(tagValue) ? 'Heads up' : 'You should know'
+    const rawTag = tagLine?.replace(/^tag\s*[:—–-]\s*/iu, '') ?? tagMatch?.[1] ?? 'You should know'
+    const normalizedTag = unquote(rawTag).replace(/[.!?。！？,，;；]+$/u, '').trim().toLowerCase()
+    const tag = OBSERVER_TAGS.find(item => item.toLowerCase() === normalizedTag)
+    if (!tag) continue
     const explanation = explain < 0 ? undefined
       : [lines[explain]!.replace(/^explain:\s*/iu, ''), ...text.split('\n').slice(explain + 1)].join('\n').trim() || undefined
     return { kind: 'line', line, tag, ...(explanation ? { explanation } : {}) }

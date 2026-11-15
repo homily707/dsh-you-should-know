@@ -2,8 +2,19 @@ import { describe, expect, it } from 'vitest'
 import { defaults, languageOf } from '../src/core/config.js'
 import { explanationPrompt, observerPrompt } from '../src/core/prompts.js'
 import { Config } from '../src/host/config.js'
+import { OBSERVER_TAGS } from '../src/core/tags.js'
+import { copy, tagCopyKey } from '../src/client/i18n.js'
 
 describe('语言设置与旁路协议', () => {
+  it('五类标签在中英文显示正确，旧版提醒仍显示通用名称', () => {
+    const labels = ['需求偏差', '意外决策', '执行失焦', '建议收尾', '值得了解']
+    OBSERVER_TAGS.forEach((tag, index) => {
+      expect(copy('zh-CN', tagCopyKey(tag))).toBe(labels[index])
+      expect(copy('en-US', tagCopyKey(tag))).toBe(tag)
+    })
+    expect(copy('zh-CN', tagCopyKey('Heads up'))).toBe('注意事项')
+  })
+
   it('旧配置补全无限检查上限，步长与上限拒绝非法数字', async () => {
     const result = await Config['~standard'].validate({})
     expect('value' in result && result.value.get().maxChecksPerTurn).toBe(0)
@@ -26,7 +37,7 @@ describe('语言设置与旁路协议', () => {
   it.each(['zh-CN', 'en-US'] as const)('%s 保留完整协议、历史主题及敏感内容限制', language => {
     const prompt = observerPrompt(['seen topic'], ['known topic'], language)
     expect(prompt).toContain('learn: none')
-    expect(prompt).toContain('tag:')
+    expect(prompt).toContain(`tag: ${OBSERVER_TAGS.join(' | ')}`)
     expect(prompt).toContain('explain:')
     expect(prompt).toContain('["seen topic"]')
     expect(prompt).toContain('["known topic"]')

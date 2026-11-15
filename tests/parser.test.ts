@@ -1,17 +1,38 @@
 import { describe, expect, it } from 'vitest'
 import { parseExplanation, parseProposal } from '../src/core/parser.js'
+import { OBSERVER_TAGS } from '../src/core/tags.js'
+import { emptyState, stateSchema } from '../src/core/state.js'
 
 describe('提醒协议边界', () => {
+  it.each(OBSERVER_TAGS)('接受五类 tag：%s', tag => {
+    expect(parseProposal(`learn: 重要事项。\ntag: ${tag}\nexplain: 有实际影响。`)).toEqual({
+      kind: 'line', line: '重要事项。', tag, explanation: '有实际影响。',
+    })
+    expect(parseProposal(`learn: 重要事项. tag: ${tag}`)).toMatchObject({ kind: 'line', tag, line: '重要事项.' })
+  })
+  it('拒绝未知或旧版通用 tag，避免把执行提醒错误标成知识提醒', () => {
+    expect(parseProposal('learn: 重要事项。\ntag: Heads up')).toEqual({ kind: 'invalid' })
+    expect(parseProposal('learn: 重要事项。\ntag: Other')).toEqual({ kind: 'invalid' })
+  })
+  it('升级后仍可读取旧版 Heads up 的当前提醒和历史', () => {
+    const saved = emptyState()
+    saved.sessions = [{ id: 'legacy', view: { id: 'v', kind: 'offer', line: '旧提醒。', tag: 'Heads up', shownAt: 1,
+      promptsSurvived: 0, expanded: false, origin: 'auto' }, history: [{ id: 'v', line: '旧提醒。', tag: 'Heads up', shownAt: 1, origin: 'auto' }] }]
+    const parsed = stateSchema.parse(saved)
+    expect(parsed.sessions[0]?.view?.tag).toBe('Heads up')
+    expect(parsed.sessions[0]?.history[0]?.tag).toBe('Heads up')
+  })
+
   it.each(['nonetheless retries require a guard', 'nonequivalent guarantees apply'])('普通内容 %s 不应当成为 none 协议', line => {
     expect(parseProposal(`learn: ${line}`)).toMatchObject({ kind: 'line', line: `${line}.` })
   })
   it('支持 learn 字段后的续行内容', () => {
-    expect(parseProposal('learn: 消息可能\n重复投递\ntag: Heads up\nexplain: 应以业务ID去重。')).toEqual({
-      kind: 'line', line: '消息可能 重复投递.', tag: 'Heads up', explanation: '应以业务ID去重。',
+    expect(parseProposal('learn: 消息可能\n重复投递\ntag: Requirement drift\nexplain: 应以业务ID去重。')).toEqual({
+      kind: 'line', line: '消息可能 重复投递.', tag: 'Requirement drift', explanation: '应以业务ID去重。',
     })
   })
   it.each(['none', 'NONE.', 'none. No useful issue.', '"none"', ''])('不展示明确的 none 或空内容 %s', line => {
-    expect(parseProposal(`learn: ${line}\ntag: Heads up`)).toEqual({ kind: 'none' })
+    expect(parseProposal(`learn: ${line}\ntag: Requirement drift`)).toEqual({ kind: 'none' })
   })
   it.each(['none:', 'none (nothing)', 'none-based advice', 'none; no topic', 'none, no topic', 'none-of-these'])('兼容 none 后的协议分隔符：%s', line => {
     expect(parseProposal(`learn: ${line}`)).toEqual({ kind: 'none' })
@@ -20,8 +41,8 @@ describe('提醒协议边界', () => {
     expect(parseProposal('learn:\nUnexpected continuation.')).toEqual({ kind: 'none' })
   })
   it('首个候选超长时继续解析后续有效候选', () => {
-    expect(parseProposal(`learn: ${'x'.repeat(241)}\n\nlearn: Valid second topic.\ntag: Heads up`)).toMatchObject({
-      kind: 'line', line: 'Valid second topic.', tag: 'Heads up',
+    expect(parseProposal(`learn: ${'x'.repeat(241)}\n\nlearn: Valid second topic.\ntag: Requirement drift`)).toMatchObject({
+      kind: 'line', line: 'Valid second topic.', tag: 'Requirement drift',
     })
   })
   it('粗体标题单独渲染，清除控制字符并保持示意代码', () => {
@@ -40,8 +61,8 @@ describe('提醒协议边界', () => {
     expect(parseExplanation(text)[0]?.lead).toBe('风险')
   })
   it('接受 CRLF、引用、Markdown、行内分类和精确字符边界', () => {
-    expect(parseProposal('> **learn:** 缓存更新有延迟. tag: Heads up\r\n> **explain:** 更新后旧值可能仍可见。')).toMatchObject({
-      kind: 'line', line: '缓存更新有延迟.', tag: 'Heads up', explanation: '更新后旧值可能仍可见。',
+    expect(parseProposal('> **learn:** 缓存更新有延迟. tag: Requirement drift\r\n> **explain:** 更新后旧值可能仍可见。')).toMatchObject({
+      kind: 'line', line: '缓存更新有延迟.', tag: 'Requirement drift', explanation: '更新后旧值可能仍可见。',
     })
     expect(parseProposal(`learn: ${'x'.repeat(239)}`)).toMatchObject({ kind: 'line' })
     expect(parseProposal(`learn: ${'x'.repeat(240)}`)).toEqual({ kind: 'invalid' })

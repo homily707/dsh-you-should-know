@@ -153,6 +153,21 @@ async function fixture() {
   }
 }
 const tests: [string, (f: Awaited<ReturnType<typeof fixture>>) => Promise<void>][] = [
+  ['五类提醒使用精确的中文标签', async f => {
+    const labels = [
+      ['Requirement drift', '需求偏差'],
+      ['Unexpected decision', '意外决策'],
+      ['Execution drift', '执行失焦'],
+      ['Wrap up', '建议收尾'],
+      ['You should know', '值得了解'],
+    ] as const
+    for (const [tag, label] of labels) {
+      await f.setView({ id: tag, kind: 'offer', line: '检查分类。', tag,
+        shownAt: Date.now(), promptsSurvived: 0, expanded: false, origin: 'auto' })
+      assert(document.querySelector('.dshysk-label')?.textContent?.includes(label), `未显示 ${label}`)
+    }
+  }],
+
   ['步长预设和自定义整数自动保存；无效值不保存', async f => {
     await f.preset('checkEvery', '12')
     assert(f.settings().checkEvery === 12, '预设没有保存')

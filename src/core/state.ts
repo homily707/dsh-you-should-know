@@ -1,10 +1,14 @@
 import { z } from 'zod'
+import { OBSERVER_TAGS } from './tags.js'
+
+// 旧提醒可能保存了 Heads up；只在读取历史数据时兼容，不再用于新模型输出。
+export const storedTagSchema = z.enum([...OBSERVER_TAGS, 'Heads up'])
 
 export const viewSchema = z.object({
   id: z.string(),
   kind: z.enum(['offer', 'explaining', 'explained', 'asked', 'failed']),
   line: z.string(),
-  tag: z.enum(['You should know', 'Heads up']),
+  tag: storedTagSchema,
   explanation: z.string().optional(),
   shownAt: z.number(),
   promptsSurvived: z.number().int().nonnegative(),
@@ -17,7 +21,7 @@ export type View = z.infer<typeof viewSchema>
 export const historyEntrySchema = z.object({
   id: z.string(),
   line: z.string(),
-  tag: z.enum(['You should know', 'Heads up']),
+  tag: storedTagSchema,
   explanation: z.string().optional(),
   shownAt: z.number(),
   language: z.enum(['zh-CN', 'en-US']).optional(),

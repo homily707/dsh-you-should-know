@@ -6,7 +6,7 @@ import { parseExplanation, parseProposal } from '../src/core/parser.js'
 import { Engine } from '../src/host/engine.js'
 
 const snapshot: GenerateOptions = { provider: 'main', model: 'main-model', messages: [{ role: 'user', content: [{ type: 'text', text: '提高性能' }] }] }
-const response = 'learn: The cache can delay updates by five minutes.\ntag: Heads up\nexplain: Cached values remain visible until the next refresh.'
+const response = 'learn: The cache can delay updates by five minutes.\ntag: Requirement drift\nexplain: Cached values remain visible until the next refresh.'
 async function fixture(generate = vi.fn(async () => response), initial = emptyState()) {
   let now = 1000
   let settings: Settings = { ...defaults, enabled: true }
@@ -199,7 +199,7 @@ describe('检查机会和旁路任务', () => {
     f.engine.capture('s', 1, 7, snapshot)
     await f.flush()
     expect(f.generate).toHaveBeenCalledTimes(1)
-    expect((await f.engine.read('s')).view?.tag).toBe('Heads up')
+    expect((await f.engine.read('s')).view?.tag).toBe('Requirement drift')
   })
   it('慢模型不阻塞步骤，同一会话不并发重复检查', async () => {
     let resolve!: (value: string) => void

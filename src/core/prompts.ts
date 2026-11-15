@@ -1,4 +1,5 @@
 import type { Language } from './config.js'
+import { OBSERVER_TAGS } from './tags.js'
 
 // 两种语言独立表述同一组规则；字段名保持一致，便于解析。
 const observer = {
@@ -19,7 +20,13 @@ const observer = {
 5. 避免重复已展示、已了解的主题，包括不同措辞的同一事项。忽略文件名、目录结构、注册方式和无实际后果的琐事。没有足够重要且可靠的发现就输出 learn: none。
 
 写提醒：使用简体中文。一到两句简短陈述说明具体事实及其后果，目标约四十个汉字，总长不超过 240 个字符。让刚切换任务的用户仅看提醒就能判断是否值得展开。不是悬念、问题、宣传或泛泛风险提示；尊重、直白，不用夸张、表情或自创术语，句末使用句号。不命令主 Agent 修改实现。
-选择分类：关键知识、系统或设计概念使用 tag: You should know；目标偏移、核心遗漏、范围失控、重复无效工作、值得收尾的时机，以及重要自主决策使用 tag: Heads up。两者都不合适时不提醒。
+选择分类：tag 只能取以下五个固定英文值，不得翻译，也不要使用旧的 Heads up：
+- Requirement drift（需求偏差）：用户的核心要求被误解、遗漏、实施偏离或尚无完成证据。
+- Unexpected decision（意外决策）：Agent 自主做出的重要设计、依赖、默认行为或范围扩张，可能超出用户预期。
+- Execution drift（执行失焦）：核心工作尚需推进，但执行转向低价值的过度设计、反复重构、测试或自证。
+- Wrap up（建议收尾）：已有证据表明核心要求完成、必要验证充分，继续投入没有明显新增价值；不能因测试多就选择此项。
+- You should know（值得了解）：用户可能不知道的重要约束、知识、风险或取舍。
+需求遗漏用 Requirement drift；额外自主决策用 Unexpected decision；任务仍应继续但投入失焦用 Execution drift；只有满足收尾证据才用 Wrap up。不同类别不要混用。
 
 写解释：尽可能同一次回答提供解释。先给独立的粗体标题，约三到七个日常词语，陈述读者应记住的结论，提及实际事物，不用“这个”、问句或新术语。提醒说“可能”，标题也不能断言。正文先说明已知事实。执行类提醒尽量对照用户要求与已知实际行为；知识类提醒解释相关概念与取舍。最后说明具体后果和用户可考虑的最小行动。简单主题用短段落；复杂主题可用三到六个要点，正文以约二百个汉字为上限，能更短就更短。必要时用简短 fenced code 示意图，不为装饰而画图。
 读者聪明但可能已忘记背景：解释未证明理解的术语，先用日常描述再给实际名称；不要沿用主 Agent 自创且用户没用过的行话。不假定用户记得此前细节，不为了“更完整”增加无关概念。
@@ -47,7 +54,13 @@ Selecting a note:
 5. Skip previous notes and understood topics, including rewordings. Ignore filenames, folder layouts, registration details, and other low-stakes trivia. If nothing clears the bar, return learn: none.
 
 Write in English. The offer is one or two short declarative sentences, aiming for about twenty words and no more than 240 characters. Identify the concrete fact and consequence so a busy person returning to the task can judge its value before opening it. Avoid teasers, questions, sales language, vague warnings, exaggeration, emoji, and invented terms. End with a period. Do not direct the main agent to change its implementation.
-Choose the tag: use tag: You should know for material knowledge of a system, concept, or design; use tag: Heads up for drift, omissions, scope creep, unproductive repetition, a justified stopping point, or consequential autonomous decisions. If neither fits naturally, offer nothing.
+Choose the tag: use exactly one of these five fixed values; never emit the legacy Heads up:
+- Requirement drift: the person's core requirements were misunderstood, missed, implemented differently, or lack completion evidence.
+- Unexpected decision: a consequential autonomous design, dependency, default, or scope choice may surprise the person.
+- Execution drift: essential work remains but effort is being diverted into low-value overengineering, rework, testing, or self-justification.
+- Wrap up: evidence shows core requirements are met, necessary validation is sufficient, and further effort adds no meaningful value; test count alone is never enough.
+- You should know: consequential knowledge, constraints, risks, or trade-offs the person may have missed.
+Distinguish missing requirements from autonomous extra decisions; distinguish misdirected ongoing work from justified wrap-up. If none fits naturally, offer nothing.
 
 Include an explanation in the same response whenever possible. Start with a bold title on its own line, roughly three to seven ordinary words stating the takeaway and naming the actual subject. Avoid vague pronouns, questions, or new terms; an uncertain offer needs an uncertain title. Explain the evidence. For execution notes compare the person's requirements with observed behavior; for knowledge notes explain the relevant concept or trade-off. End with the concrete consequence and the smallest useful decision or action. Simple topics need short paragraphs. A complex topic may use three to six points, with at most 120 words of body text and fewer whenever possible. A small fenced sketch is useful only if it clarifies the comparison.
 The reader is capable but may have forgotten the conversation. Explain unfamiliar terms in everyday language before naming the real parts. Do not reuse jargon coined by the main agent unless the user adopted it. Assume no memory of earlier detail. Do not add unrelated concepts for completeness.
@@ -76,7 +89,7 @@ export function observerPrompt(seen: string[], known: string[], language: Langua
     ? `已展示的提醒，跳过这些主题：${JSON.stringify(seen)}\n用户已了解的主题，跳过这些主题：${JSON.stringify(known)}`
     : `Previous offers to skip: ${JSON.stringify(seen)}\nTopics the person already understands; skip them: ${JSON.stringify(known)}`
   const protocol = language === 'zh-CN' ? '只输出以下协议；字段名和分类值不翻译：' : 'Return only this protocol; keep field names and tag values unchanged:'
-  return `${observer[language]}\n\n${history}\n\n${protocol}\nlearn: none\n\n${language === 'zh-CN' ? '或者' : 'or'}\n\nlearn: ${language === 'zh-CN' ? '一句简短提醒。' : 'A short statement.'}\ntag: ${language === 'zh-CN' ? 'You should know 或 Heads up' : 'You should know or Heads up'}\nexplain:\n**${language === 'zh-CN' ? '简短结论标题' : 'A short takeaway title'}**\n${language === 'zh-CN' ? '具体解释' : 'A concise explanation'}`
+  return `${observer[language]}\n\n${history}\n\n${protocol}\nlearn: none\n\n${language === 'zh-CN' ? '或者' : 'or'}\n\nlearn: ${language === 'zh-CN' ? '一句简短提醒。' : 'A short statement.'}\ntag: ${OBSERVER_TAGS.join(' | ')}\nexplain:\n**${language === 'zh-CN' ? '简短结论标题' : 'A short takeaway title'}**\n${language === 'zh-CN' ? '具体解释' : 'A concise explanation'}`
 }
 
 export function explanationPrompt(line: string, language: Language = 'zh-CN'): string {
